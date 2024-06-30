@@ -1,9 +1,9 @@
 /**
  */
- 
-import {SystemObject} from "./systemobject.js";
- 
-import {cat, sign, stripjunk} from "./systemobject.js";
+
+import { SystemObject } from "./systemobject.js";
+
+import { cat, sign, stripjunk } from "./systemobject.js";
 
 export class DnD5eObject extends SystemObject {
 
@@ -18,7 +18,7 @@ export class DnD5eObject extends SystemObject {
 	gspell;
 	gcheck;
 	prof;
-	 
+
 	constructor(filter, actor, title) {
 		super(filter, actor, title);
 	}
@@ -57,96 +57,108 @@ export class DnD5eObject extends SystemObject {
 		}
 		return ref;
 	}
-	
-	
+
+
 	getValue(symbol) {
 		switch (symbol) {
-		case 'item':
-			return this.curItem;
-		case 'itemname':
-			return this.curItem?.name;
-		case 'itemstats':
-			return this.getitemstats(this.curItem);
-		case 'itemdetails':
-			return stripjunk(this.filter, this.curItem.system?.description?.value);
-		case 'damage':
-			return this._itemDamage(this.curItem);
-		case 'container':
-			if (this.curItem?.container)
-				return this.curItem.container.name;
-			break;
-		case 'spellLevel':
-			if (this.curItem == null || this.curItem.type != 'spell')
-				return 'spellLevel';
-			let school = CONFIG.DND5E.spellSchools[this.curItem.system.school];
-			let ritual = this.curItem.system.components.ritual ? ' (ritual)' : '';
-			if (this.curItem.system.level == 0)
-				return `${school} cantrip${ritual}`;
-			return `${CONFIG.DND5E.spellLevels[this.curItem.system.level]} ${school}${ritual}`;
-		case 'spellCastTime':
-			let cond = this.curItem.system.activation.condition ? ` (${this.curItem.system.activation.condition})` : '';
-			let ccost = this.curItem.system.activation.cost;
-			let ct = this.curItem.system.activation.type;
+			case 'item':
+				return this.curItem;
+			case 'itemname':
+				return this.curItem?.name;
+			case 'itemstats':
+				return this.getitemstats(this.curItem);
+			case 'itemdetails':
+				return stripjunk(this.filter, this.curItem.system?.description?.value);
+			case 'damage':
+				return this._itemDamage(this.curItem);
+			case 'container':
+				if (this.curItem?.container)
+					return this.curItem.container.name;
+				break;
+			case 'spellLevel':
+				if (this.curItem == null || this.curItem.type != 'spell')
+					return 'spellLevel';
+				// let school = CONFIG.DND5E.spellSchools[this.curItem.system.school];
+				let school = CONFIG.DND5E.spellSchools[this.curItem.system.school].label;
+				// let ritual = this.curItem.system.components.ritual ? ' (ritual)' : '';
+				let ritual = this.curItem.system.properties.has('ritual') ? ' (ritual)' : '';
+				if (this.curItem.system.level == 0)
+					return `${school} cantrip${ritual}`;
+				return `${CONFIG.DND5E.spellLevels[this.curItem.system.level]} ${school}${ritual}`;
+			case 'spellCastTime':
+				let cond = this.curItem.system.activation.condition ? ` (${this.curItem.system.activation.condition})` : '';
+				let ccost = this.curItem.system.activation.cost;
+				let ct = this.curItem.system.activation.type;
 
-			switch (this.curItem.system.activation.type) {
-			case 'reactiondamage':
-			case 'reactionmanual':
-			case 'reaction':
-				ct = 'Reaction';
-				return `${ct}${cond}`
-			case 'bonus':
-				ct = 'Bonus Action';
-				return `${ct}${cond}`
-			case 'action':
-				ct = 'Action';
-				break;
-			case 'minute':
-				ct = 'Minute';
-				break;
-			}
-			return `${ccost} ${ct}${cond}${ccost!=1?'s':''}`;
-		case 'spellRange':
-			let range = this.curItem.system.range.units;
-			if (range == null && this.curItem.system.range.value == null)
-				range = `${this.curItem.system.target.value}-${this.curItem.system.target.units} ${this.curItem.system.target.type}`;
-			else if (range != 'self' && range != 'touch')
-				range = `${this.curItem.system.range.value} ${this.curItem.system.range.units}`;
-			return range;
-		case 'spellComponents':
-			let comp = "";
-			if (this.curItem.system.components.vocal)
-				comp = cat(comp, ', ', 'V');
-			if (this.curItem.system.components.somatic)
-				comp = cat(comp, ', ', 'S');
-			if (this.curItem.system.components.material)
-				comp = cat(comp, ', ', 'M');
-			if (this.curItem.system.materials.value)
-				comp += ` (${this.curItem.system.materials.value})`;
-			return comp;
-		case 'spellDuration':
-			let dur = '';
-			switch (this.curItem.system.duration.units) {
-			case 'inst':
-				dur = 'Instantaneous';
-				break;
-			case 'perm':
-				dur = 'Permanent';
-				break;
+				switch (this.curItem.system.activation.type) {
+					case 'reactiondamage':
+					case 'reactionmanual':
+					case 'reaction':
+						ct = 'Reaction';
+						return `${ct}${cond}`
+					case 'bonus':
+						ct = 'Bonus Action';
+						return `${ct}${cond}`
+					case 'action':
+						ct = 'Action';
+						break;
+					case 'minute':
+						ct = 'Minute';
+						break;
+				}
+				return `${ccost} ${ct}${cond}${ccost != 1 ? 's' : ''}`;
+			case 'spellRange':
+				let range = this.curItem.system.range.units;
+				if (range == null && this.curItem.system.range.value == null)
+					range = `${this.curItem.system.target.value}-${this.curItem.system.target.units} ${this.curItem.system.target.type}`;
+				else if (range != 'self' && range != 'touch')
+					range = `${this.curItem.system.range.value} ${this.curItem.system.range.units}`;
+				return range;
+			case 'spellComponents':
+				let comp = "";
+				// if (this.curItem.system.components.vocal)
+				// 	comp = cat(comp, ', ', 'V');
+				// if (this.curItem.system.components.somatic)
+				// 	comp = cat(comp, ', ', 'S');
+				// if (this.curItem.system.components.material)
+				// 	comp = cat(comp, ', ', 'M');
+				// if (this.curItem.system.materials.value)
+				// 	comp += ` (${this.curItem.system.materials.value})`;
+				// console.log(this.curItem.system.properties);
+				if (this.curItem.system.properties.has('vocal'))
+					comp = cat(comp, ', ', 'V');
+				if (this.curItem.system.properties.has('somatic'))
+					comp = cat(comp, ', ', 'S');
+				if (this.curItem.system.properties.has('materials'))
+					comp = cat(comp, ', ', 'M');
+				if (this.curItem.system.materials.value)
+					comp += ` (${this.curItem.system.materials.value})`;
+				return comp;
+			case 'spellDuration':
+				let dur = '';
+				switch (this.curItem.system.duration.units) {
+					case 'inst':
+						dur = 'Instantaneous';
+						break;
+					case 'perm':
+						dur = 'Permanent';
+						break;
+					default:
+						let plural = this.curItem.system.duration.value != 1 ? 's' : '';
+						// if (this.curItem.system.components.concentration)
+						if (this.curItem.system.properties.has('concentration'))
+							dur = `Concentration, up to ${this.curItem.system.duration.value} ${this.curItem.system.duration.units}${plural}`;
+						else
+							dur = `${this.curItem.system.duration.value} ${this.curItem.system.duration.units}${plural}`;
+				}
+				return dur;
 			default:
-				let plural = this.curItem.system.duration.value != 1 ? 's' : '';
-				if (this.curItem.system.components.concentration)
-					dur = `Concentration, up to ${this.curItem.system.duration.value} ${this.curItem.system.duration.units}${plural}`;
-				else
-					dur = `${this.curItem.system.duration.value} ${this.curItem.system.duration.units}${plural}`;
-			}
-			return dur;
-		default:
-			let match = symbol.match(/^@([.A-Za-z0-9_]+)/);
-			if (match != null) {
-				// Process something like @classes.rogue.levels
-				return this._getRef(match[1]);
-			}
-			break;
+				let match = symbol.match(/^@([.A-Za-z0-9_]+)/);
+				if (match != null) {
+					// Process something like @classes.rogue.levels
+					return this._getRef(match[1]);
+				}
+				break;
 		}
 		return super.getValue(symbol);
 	}
@@ -163,7 +175,7 @@ export class DnD5eObject extends SystemObject {
 		//bonus = addbonus(bonus, this.gsave);
 		this.defs[abil + 'Save'] = bonus;
 	}
-	
+
 	_setspeed(a) {
 		let speed = '';
 		const m = a.system.attributes.movement;
@@ -182,7 +194,7 @@ export class DnD5eObject extends SystemObject {
 		this.defs['speed'] = speed;
 	}
 
-	
+
 	_setac(a) {
 		let ac = 10;
 		let items = '';
@@ -202,61 +214,61 @@ export class DnD5eObject extends SystemObject {
 				});
 			});
 		});
-		
+
 		if (a.system.attributes.ac.bonus)
 			bonuses += a.system.attributes.ac.bonus;
 
 		switch (a.system.attributes.ac.calc) {
-		case 'default':
-			const armor = a.items.filter(it => it.type == 'equipment' && it.system.armor.type != undefined && it.system.equipped);
-			armor.forEach((e) => {
-				switch (e.system.armor.type) {
-				case 'medium': 
-				case 'heavy': 
-				case 'light': 
-					base = Math.max(base, e.system.armor.value);
-					maxdex = e.system.armor.dex;
-					items = cat(items, ', ', e.name);
-					break;
-				case 'shield':
-					bonuses += e.system.armor.value;
-					items = cat(items, ', ', e.name);
-					break;
-				case 'trinket':
-					// FIX: rings & cloaks. bonuses are in the effects.
-					items = cat(items, ', ', e.name);
-					break;
-				}
-			});
-			if (maxdex != null && a.system.abilities.dex.mod > maxdex)
-				dexbonus = maxdex;
-			else
-				dexbonus = a.system.abilities.dex.mod;
-			ac = base + dexbonus + bonuses;
-			break;
-		case 'mage':
-			items = cat(items, ', ', 'Mage Armor');
-			ac = 13 + a.system.abilities.dex.mod + bonuses;
-			break;
-		case 'natural':
-			items = cat(items, ', ', 'natural armor');
-			ac = a.system.attributes.ac.flat;
-			break;
-		case 'unarmoredMonk':
-			items = cat(items, ', ', 'unarmored monk');
-			ac = 10 + a.system.abilities.dex.mod + a.system.abilities.wis.mod + bonuses;
-			break;
-		case 'unarmoredBarb':
-			items = cat(items, ', ', 'unarmored barbarian');
-			ac = 10 + a.system.abilities.dex.mod + a.system.abilities.con.mod + bonuses;
-			break;
-		case 'draconic':
-			items = cat(items, ', ', 'draconic resistance');
-			ac = 13 + a.system.abilities.dex.mod + bonuses;
-			break;
-		case 'flat':
-			this.defs['ac'] = a.system.attributes.ac.flat;
-			return;
+			case 'default':
+				const armor = a.items.filter(it => it.type == 'equipment' && it.system.armor.type != undefined && it.system.equipped);
+				armor.forEach((e) => {
+					switch (e.system.armor.type) {
+						case 'medium':
+						case 'heavy':
+						case 'light':
+							base = Math.max(base, e.system.armor.value);
+							maxdex = e.system.armor.dex;
+							items = cat(items, ', ', e.name);
+							break;
+						case 'shield':
+							bonuses += e.system.armor.value;
+							items = cat(items, ', ', e.name);
+							break;
+						case 'trinket':
+							// FIX: rings & cloaks. bonuses are in the effects.
+							items = cat(items, ', ', e.name);
+							break;
+					}
+				});
+				if (maxdex != null && a.system.abilities.dex.mod > maxdex)
+					dexbonus = maxdex;
+				else
+					dexbonus = a.system.abilities.dex.mod;
+				ac = base + dexbonus + bonuses;
+				break;
+			case 'mage':
+				items = cat(items, ', ', 'Mage Armor');
+				ac = 13 + a.system.abilities.dex.mod + bonuses;
+				break;
+			case 'natural':
+				items = cat(items, ', ', 'natural armor');
+				ac = a.system.attributes.ac.flat;
+				break;
+			case 'unarmoredMonk':
+				items = cat(items, ', ', 'unarmored monk');
+				ac = 10 + a.system.abilities.dex.mod + a.system.abilities.wis.mod + bonuses;
+				break;
+			case 'unarmoredBarb':
+				items = cat(items, ', ', 'unarmored barbarian');
+				ac = 10 + a.system.abilities.dex.mod + a.system.abilities.con.mod + bonuses;
+				break;
+			case 'draconic':
+				items = cat(items, ', ', 'draconic resistance');
+				ac = 13 + a.system.abilities.dex.mod + bonuses;
+				break;
+			case 'flat':
+				this.defs['ac'] = a.system.attributes.ac.flat;
+				return;
 		}
 
 		// We calculated the AC, but we'll use the value calculated in the actor
@@ -284,7 +296,7 @@ export class DnD5eObject extends SystemObject {
 			list = list.concat(traits.custom.split(/ *; */));
 		this.defs[title] = list.join(', ');
 	}
-	
+
 	_setSenses(senses) {
 		let s = '';
 		if (senses.darkvision)
@@ -301,7 +313,7 @@ export class DnD5eObject extends SystemObject {
 			this.defs['senses'] = s;
 	}
 
-	
+
 	_initialize(title) {
 		super._initialize(title);
 		let a = this.actor;
@@ -346,9 +358,9 @@ export class DnD5eObject extends SystemObject {
 						spellAbilities.push(c.system.spellcasting.ability);
 				}
 				switch (c.name) {
-				case 'Warlock':
-					this.defs['warlockLevel'] = c.system.levels;
-					break;
+					case 'Warlock':
+						this.defs['warlockLevel'] = c.system.levels;
+						break;
 				}
 			});
 			if (a.system.attributes.spellcasting) {
@@ -367,7 +379,7 @@ export class DnD5eObject extends SystemObject {
 			const cr = Number(a.system.details.cr);
 			this.prof = this.defs['prof'] = Math.max(Math.floor((cr - 1) / 4), 0) + 2;
 			this.defs['cr'] = cr;
-			
+
 			const t = a.system.details.type;
 			const st = t.subtype ? ' (' + t.subtype + ')' : '';
 			this.defs['race'] = `${t.value}${st}`;
@@ -377,7 +389,7 @@ export class DnD5eObject extends SystemObject {
 		}
 
 		this.defs['alignment'] = a.system.details.alignment;
-		['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach( abil => {
+		['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(abil => {
 			this.defs[abil] = a.system.abilities[abil].value;
 			this.defs[abil + 'Mod'] = a.system.abilities[abil].mod;
 			this._setsave(a, abil);
@@ -386,13 +398,13 @@ export class DnD5eObject extends SystemObject {
 		this._setac(a);
 		this._setspeed(a);
 		this.defs['hp'] = a.system.attributes.hp.max;
-		
+
 		let skills = '';
 		Object.keys(a.system.skills).forEach((skill) => {
 			skills = cat(skills, ', ', this._getskill(a, skill));
 		});
 		this.defs['skills'] = skills;
-		
+
 		let initAbility = a.system.attributes.init.ability;
 		if (!initAbility)
 			initAbility = 'dex';
@@ -428,15 +440,15 @@ export class DnD5eObject extends SystemObject {
 			this.defs['toolProficiencies'] = tools.join(', ');
 
 		if (spellAbilities.length > 0)
-			 this._setSpellDC(a, spellAbilities);
-		 
-		 let background = a.items.filter((b) => b.type == 'background');
-		 if (background.length > 0)
-			 this.defs['background'] = background[0].name;
-		 else
-			 this.defs['background'] = '';
+			this._setSpellDC(a, spellAbilities);
+
+		let background = a.items.filter((b) => b.type == 'background');
+		if (background.length > 0)
+			this.defs['background'] = background[0].name;
+		else
+			this.defs['background'] = '';
 	}
-	
+
 	_setSpellDC(a, spellAbilities) {
 		let mod = 0;
 		let data = '';
@@ -445,51 +457,51 @@ export class DnD5eObject extends SystemObject {
 			for (let abil of spellAbilities) {
 				if (abil != a.system.attributes.spellcasting) {
 					switch (abil) {
-					case 'int':
-						mod = a.system.abilities.int.mod;
-						break;
-					case 'wis':
-						mod = a.system.abilities.wis.mod;
-						break;
-					case 'cha':
-						mod = a.system.abilities.cha.mod;
-						break;
+						case 'int':
+							mod = a.system.abilities.int.mod;
+							break;
+						case 'wis':
+							mod = a.system.abilities.wis.mod;
+							break;
+						case 'cha':
+							mod = a.system.abilities.cha.mod;
+							break;
 					}
 				}
-				data = cat(data, '; ', `${CONFIG.DND5E.abilities[abil]} Spell DC ${8+this.prof+_addbonus(mod, this.gspell)}, Spell Attack ${sign(0, mod+this.prof)}`);
+				data = cat(data, '; ', `${CONFIG.DND5E.abilities[abil]} Spell DC ${8 + this.prof + _addbonus(mod, this.gspell)}, Spell Attack ${sign(0, mod + this.prof)}`);
 				this.defs[abil + 'msak'] = sign(this, mod + this.prof + Number(this.gmsak?.attack));
 				this.defs[abil + 'rsak'] = sign(this, mod + this.prof + Number(this.grsak?.attack));
-				this.defs[abil + 'spelldc'] = 8 + this.prof+_addbonus(mod, this.gspell);
+				this.defs[abil + 'spelldc'] = 8 + this.prof + _addbonus(mod, this.gspell);
 				if (n++ == 0) {
 					this.defs['rsak'] = sign(this, mod + this.prof + Number(this.grsak?.attack));
 					this.defs['msak'] = sign(this, mod + this.prof + Number(this.gmsak?.attack));
-					this.defs['spelldc'] = 8 + this.prof+_addbonus(mod, this.gspell);
+					this.defs['spelldc'] = 8 + this.prof + _addbonus(mod, this.gspell);
 				}
 			}
 		} else {
 			switch (a.system.attributes.spellcasting) {
-			case 'wis':
-				mod = a.system.abilities.wis.mod;
-				break;
-			case 'int':
-				mod = a.system.abilities.int.mod;
-				break;
-			case 'cha':
-				mod = a.system.abilities.cha.mod;
-				break;
+				case 'wis':
+					mod = a.system.abilities.wis.mod;
+					break;
+				case 'int':
+					mod = a.system.abilities.int.mod;
+					break;
+				case 'cha':
+					mod = a.system.abilities.cha.mod;
+					break;
 			}
-			data = `Spell DC ${8+this.prof+_addbonus(mod, this.gspell)}, Spell Attack ${sign(0, mod+this.prof)}`;
+			data = `Spell DC ${8 + this.prof + _addbonus(mod, this.gspell)}, Spell Attack ${sign(0, mod + this.prof)}`;
 
 			this.defs[a.system.attributes.spellcasting + 'msak'] =
 				this.defs['msak'] = sign(this, mod + this.prof + Number(this.gmsak?.attack));
 			this.defs[a.system.attributes.spellcasting + 'rsak'] =
 				this.defs['rsak'] = sign(this, mod + this.prof + Number(this.grsak?.attack));
 			this.defs[a.system.attributes.spellcasting + 'spelldc'] =
-				this.defs['spelldc'] = 8 + this.prof+_addbonus(mod, this.gspell);
+				this.defs['spelldc'] = 8 + this.prof + _addbonus(mod, this.gspell);
 		}
 		this.defs['spellcasting'] = data;
 	}
-	
+
 	/**	Replace any @ refs in the text.
 	 */
 	replaceRefs(str, mod) {
@@ -501,16 +513,16 @@ export class DnD5eObject extends SystemObject {
 				result += str.substring(0, match.index);
 			i = match.index + match[0].length;
 			switch (match[1]) {
-			case 'mod':
-				result += mod.toString();
-				break;
-			default:
-				if (/\./.test(match[1])) {
-					result += this._getRef(match[1]);
-				} else {
-					result += match[1];
-				}
-				break;
+				case 'mod':
+					result += mod.toString();
+					break;
+				default:
+					if (/\./.test(match[1])) {
+						result += this._getRef(match[1]);
+					} else {
+						result += match[1];
+					}
+					break;
 			}
 		}
 		if (i > 0) {
@@ -540,13 +552,13 @@ export class DnD5eObject extends SystemObject {
 			return `${dice}${sign(this.filter, total)}`;
 		return dice;
 	}
-	
+
 	getitemstats(item) {
 		switch (item?.type) {
-		case undefined:
-			return 'undefined';
-		case 'weapon':
-			return this._weaponStats(item);
+			case undefined:
+				return 'undefined';
+			case 'weapon':
+				return this._weaponStats(item);
 		}
 		return this._genericStats(item);
 	}
@@ -590,21 +602,21 @@ export class DnD5eObject extends SystemObject {
 			let activation = i.system.activation;
 			if (activation.type == 'reaction')
 				deets = cat(deets, ', ', activation.type);
-			else if (activation.type != 'action' &&  activation.type != 'special')
+			else if (activation.type != 'action' && activation.type != 'special')
 				deets = cat(deets, ', ', `${activation.cost != 1 && activation.cost != null ? activation.cost + ' ' : ''}${activation.type} action${activation.cost != 1 && activation.cost != null ? 's' : ''}`);
 		}
-		
+
 		if (i.system.uses != undefined && i.system.uses.value != null) {
 			const u = i.system.uses;
 			if (u.max > 0) {
 				let per = u.per;
 				if (per == 'charges') {
 					if (u.max != 1)
-						deets = cat(deets, ', ', `${u.max} charge${u.max!=1?'s':''}`);
+						deets = cat(deets, ', ', `${u.max} charge${u.max != 1 ? 's' : ''}`);
 				} else {
 					switch (per) {
-					case 'lr': per = 'long rest'; break;
-					case 'sr': per = 'short rest'; break;
+						case 'lr': per = 'long rest'; break;
+						case 'sr': per = 'short rest'; break;
 					}
 					deets = cat(deets, ', ', `uses: ${u.max} per ${per}`);
 				}
@@ -622,7 +634,7 @@ export class DnD5eObject extends SystemObject {
 					dmg = evaluated;
 				if (i.system?.scaling?.mode == 'cantrip') {
 					let cantripDmg = 1 + Math.trunc((this.charLevel + 1) / 6);
-					dmg = dmg.replace(/^1d/i, cantripDmg.toString() + 'd'); 
+					dmg = dmg.replace(/^1d/i, cantripDmg.toString() + 'd');
 				}
 				if (d[1] === 'temphp')
 					d[1] = 'temporary healing';
@@ -634,7 +646,7 @@ export class DnD5eObject extends SystemObject {
 			if (damage.search(/healing/i) < 0)
 				deets += ' damage';
 		}
-		
+
 		if (i.system.formula) {
 			let formula = this.replaceRefs(i.system.formula, 0);
 			let result = this.filter.evalexp(formula);
@@ -647,7 +659,7 @@ export class DnD5eObject extends SystemObject {
 			}
 		}
 		if (i.system?.duration?.value)
-			deets = cat(deets, ', ', `Duration: ${i.system.duration.value} ${i.system.duration.units}${i.system.duration.value!=1?'s':''}`);
+			deets = cat(deets, ', ', `Duration: ${i.system.duration.value} ${i.system.duration.units}${i.system.duration.value != 1 ? 's' : ''}`);
 		if (i.system?.target?.value)
 			deets = cat(deets, ', ', `${i.system.target.value} ${i.system.target.units} ${i.system.target.type}`);
 		if (i.system?.price?.value)
@@ -656,46 +668,46 @@ export class DnD5eObject extends SystemObject {
 			deets = cat(deets, ', ', `Weight: ${i.system.weight.value} ${i.system.weight.units}`);
 		return deets;
 	}
-	
+
 	_weaponStats(w) {
 		let a = this.actor;
 		// Greataxe. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: (1d12 + 3) slashing damage.
 		let weapdeets = '';
 		if (w.system?.activation.type == 'legendary') {
-			weapdeets = `${w.system.activation.cost} Legendary Action${w.system.activation.cost!=1 ? 's' : ''}`;
+			weapdeets = `${w.system.activation.cost} Legendary Action${w.system.activation.cost != 1 ? 's' : ''}`;
 		}
 		let mod = 0;
 		let range = '';
 		switch (w.system.actionType) {
-		case 'mwak':
-		case '':
-			weapdeets = cat(weapdeets, ', ', 'Melee: ');
-			if (w.system.properties.has("fin"))
-				mod = Math.max(a.system.abilities.str.mod, a.system.abilities.dex.mod);
-			else
-				mod = a.system.abilities.str.mod;
-			if (w.system.properties.has("thr")) {
-				if (w.system.range.long)
-					range = `reach 5 ft or range ${w.system.range.value}/${w.system.range.long} ${w.system.range.units}`;
+			case 'mwak':
+			case '':
+				weapdeets = cat(weapdeets, ', ', 'Melee: ');
+				if (w.system.properties.has("fin"))
+					mod = Math.max(a.system.abilities.str.mod, a.system.abilities.dex.mod);
 				else
-					range = `reach 5 ft or range ${w.system.range.value} ${w.system.range.units}`;
-			} else if (w.system.range.value != null && w.system.range.units != null )
-				range = `reach ${w.system.range.value} ${w.system.range.units}`;
-			break;
-		case 'rwak':
-			weapdeets = cat(weapdeets, ', ', 'Ranged: ');
-			mod = a.system.abilities.dex.mod;
-			if (w.system.range.long)
-				range = `range ${w.system.range.value}/${w.system.range.long} ${w.system.range.units}`;
-			else
-				range = `range ${w.system.range.value} ${w.system.range.units}`;
-			break;
+					mod = a.system.abilities.str.mod;
+				if (w.system.properties.has("thr")) {
+					if (w.system.range.long)
+						range = `reach 5 ft or range ${w.system.range.value}/${w.system.range.long} ${w.system.range.units}`;
+					else
+						range = `reach 5 ft or range ${w.system.range.value} ${w.system.range.units}`;
+				} else if (w.system.range.value != null && w.system.range.units != null)
+					range = `reach ${w.system.range.value} ${w.system.range.units}`;
+				break;
+			case 'rwak':
+				weapdeets = cat(weapdeets, ', ', 'Ranged: ');
+				mod = a.system.abilities.dex.mod;
+				if (w.system.range.long)
+					range = `range ${w.system.range.value}/${w.system.range.long} ${w.system.range.units}`;
+				else
+					range = `range ${w.system.range.value} ${w.system.range.units}`;
+				break;
 		}
 
 		function proficiencyMultiplier(actor, sys) {
-			if ( Number.isFinite(sys.prof.multiplier) )
+			if (Number.isFinite(sys.prof.multiplier))
 				return sys.prof.multiplier;
-			if ( actor.type === "npc" ) return 1; // NPCs are always considered proficient with any weapon in their stat block.
+			if (actor.type === "npc") return 1; // NPCs are always considered proficient with any weapon in their stat block.
 			const config = CONFIG.DND5E.weaponProficienciesMap;
 			const itemProf = config[sys.weaponType];
 			const actorProfs = actor.system.traits?.weaponProf?.value ?? new Set();
@@ -706,12 +718,12 @@ export class DnD5eObject extends SystemObject {
 		}
 
 		let prof = proficiencyMultiplier(a, w.system) ? this.defs['prof'] : 0;
-			
+
 		let tohit = Number(w.system.attack?.bonus) + mod + prof;
 		weapdeets += sign(this.filter, tohit) + ` to hit`;
 		if (range)
 			weapdeets += `, ${range}`;
-		
+
 		let damage = '';
 		w.system.damage.parts.forEach((d) => {
 			let dmg = this.getDamage(d[0], mod);
@@ -751,20 +763,20 @@ export class DnD5eObject extends SystemObject {
 		return s + ' ' + sign(this.filter, value);
 	}
 
- }
- 
- function _addbonus(value, b) {
+}
+
+function _addbonus(value, b) {
 	switch (typeof b) {
-	case 'number':
-		if (Number(value))
-			return value + b;
-		return `${value} + ${b}`;
-	case 'string':
-		if (b.search(/[^0-9]/) >= 0)
+		case 'number':
+			if (Number(value))
+				return value + b;
 			return `${value} + ${b}`;
-		if (b)
-			return value + Number(b);
-		return value;
+		case 'string':
+			if (b.search(/[^0-9]/) >= 0)
+				return `${value} + ${b}`;
+			if (b)
+				return value + Number(b);
+			return value;
 	}
 	return value;
 }
