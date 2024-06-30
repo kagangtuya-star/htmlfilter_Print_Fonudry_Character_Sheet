@@ -653,7 +653,7 @@ export class DnD5eObject extends SystemObject {
 		if (i.system?.price?.value)
 			deets = cat(deets, ', ', `${i.system.price.value}${i.system.price?.denomination}`);
 		if (i.system?.weight)
-			deets = cat(deets, ', ', `Weight: ${i.system.weight}`);
+			deets = cat(deets, ', ', `Weight: ${i.system.weight.value} ${i.system.weight.units}`);
 		return deets;
 	}
 	
