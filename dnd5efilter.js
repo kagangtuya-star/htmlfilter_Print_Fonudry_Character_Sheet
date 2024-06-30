@@ -79,7 +79,8 @@ export class DnD5eObject extends SystemObject {
 				if (this.curItem == null || this.curItem.type != 'spell')
 					return 'spellLevel';
 				// let school = CONFIG.DND5E.spellSchools[this.curItem.system.school];
-				let school = CONFIG.DND5E.spellSchools[this.curItem.system.school].label;
+				if (CONFIG.DND5E.spellSchools[this.curItem.system.school])
+				    let school = CONFIG.DND5E.spellSchools[this.curItem.system.school].label;
 				// let ritual = this.curItem.system.components.ritual ? ' (ritual)' : '';
 				let ritual = this.curItem.system.properties.has('ritual') ? ' (ritual)' : '';
 				if (this.curItem.system.level == 0)
