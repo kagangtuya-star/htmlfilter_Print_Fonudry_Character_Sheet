@@ -309,16 +309,16 @@ export class DnD5eObject extends SystemObject {
 	
 	_setSenses(senses) {
 		let s = '';
-		if (senses.darkvision)
-			s = cat(s, ', ', `Darkvision ${senses.darkvision} ${senses.units}`);
-		if (senses.blindsight)
-			s = cat(s, ', ', `Blindsight ${senses.blindsight} ${senses.units}`);
-		if (senses.tremorsense)
-			s = cat(s, ', ', `Tremorsense ${senses.tremorsense} ${senses.units}`);
-		if (senses.truesight)
-			s = cat(s, ', ', `Truesight ${senses.truesight} ${senses.units}`);
-		if (senses.special)
-			s = cat(s, ', ', `${senses.special} ${senses.units}`);
+		if (senses.ranges.darkvision)
+			s = cat(s, ', ', `Darkvision ${senses.ranges.darkvision} ${senses.units}`);
+		if (senses.ranges.blindsight)
+			s = cat(s, ', ', `Blindsight ${senses.ranges.blindsight} ${senses.units}`);
+		if (senses.ranges.tremorsense)
+			s = cat(s, ', ', `Tremorsense ${senses.ranges.tremorsense} ${senses.units}`);
+		if (senses.ranges.truesight)
+			s = cat(s, ', ', `Truesight ${senses.ranges.truesight} ${senses.units}`);
+		if (senses.ranges.special)
+			s = cat(s, ', ', `${senses.ranges.special} ${senses.units}`);
 		if (s != '')
 			this.defs['senses'] = s;
 	}

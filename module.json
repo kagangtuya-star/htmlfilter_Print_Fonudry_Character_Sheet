@@ -15,18 +15,18 @@
 			"compatibility": {
 				"minimum": "1.0.5",
 				"maximum": "1.99.0",
-				"verified": "1.0.5"
+				"verified": "1.0.7"
 			}
 		}
 	]
   },
   "compatibility": {
     "minimum": "9",
-    "verified": "13"
+    "verified": "14"
   },
   "esmodules": ["htmlfilter.js"],
-  "version": "1.2.5",
+  "version": "1.2.6",
   "url": "https://github.com/flyingsquad/htmlfilter",
   "manifest": "https://raw.githubusercontent.com/flyingsquad/htmlfilter/main/module.json",
-  "download": "https://github.com/flyingsquad/htmlfilter/archive/refs/tags/v1.2.5.zip"
+  "download": "https://github.com/flyingsquad/htmlfilter/archive/refs/tags/v1.2.6.zip"
 }
